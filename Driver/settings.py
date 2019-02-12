@@ -38,6 +38,7 @@ INSTALLED_APPS = [
     'django.contrib.messages',
     'django.contrib.staticfiles',
     'drive_safe',
+    'rest_framework',
 ]
 
 MIDDLEWARE = [
