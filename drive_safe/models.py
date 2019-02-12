@@ -15,12 +15,20 @@ class Advice(models.Model):
     def __str__(self):
         return self.title
 
+    class Meta:
+        verbose_name = "Poradę"
+        verbose_name_plural = "Porady"
+
 
 class Tags(models.Model):
     name = models.CharField(max_length=32, verbose_name="Nazwa tagu")
 
     def __str__(self):
         return self.name
+
+    class Meta:
+        verbose_name = "Tag"
+        verbose_name_plural = "Tagi"
 
 
 class TestQuestions(models.Model):
@@ -30,6 +38,10 @@ class TestQuestions(models.Model):
     answer_b = models.TextField(verbose_name="Odpowiedź B")
     answer_c = models.TextField(verbose_name="Odpowiedź C")
     correct_answer = models.CharField(max_length=1, verbose_name="Poprawna odpowiedź")
+
+    class Meta:
+        verbose_name = "Pytanie testowe"
+        verbose_name_plural = "Pytania testowe"
 
 
 class UserScore(models.Model):
