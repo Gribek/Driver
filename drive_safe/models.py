@@ -39,6 +39,9 @@ class TestQuestions(models.Model):
     answer_c = models.TextField(verbose_name="Odpowiedź C")
     correct_answer = models.CharField(max_length=1, verbose_name="Poprawna odpowiedź")
 
+    def __str__(self):
+        return self.advice
+
     class Meta:
         verbose_name = "Pytanie testowe"
         verbose_name_plural = "Pytania testowe"
