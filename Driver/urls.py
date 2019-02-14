@@ -24,4 +24,9 @@ urlpatterns = [
     url(r'^advices/(?P<advice_id>(\d)+)$', AdviceDetail.as_view()),
     url(r'^advices/tag/(?P<tag_id>(\d)+)$', AdviceTagList.as_view()),
     url(r'^advices/test/(?P<advice_id>(\d)+)$', AdviceTest.as_view()),
+    url(r'^forum_questions/$', ForumQuestionList.as_view()),
+    url(r'^forum_questions/(?P<question_id>(\d)+)$', ForumQuestionDetail.as_view()),
+    url(r'^forum_answers/$', ForumAnswersList.as_view()),
+    url(r'^forum_answers/question/(?P<question_id>(\d)+)$', ForumAnswersForQuestion.as_view()),
+    url(r'^forum_answers/(?P<answer_id>(\d)+)$', ForumAnswersDetail.as_view()),
 ]
