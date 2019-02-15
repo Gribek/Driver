@@ -1,9 +1,11 @@
+from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
 from drive_safe.models import *
 from drive_safe.serializers import *
+from django.contrib.auth.models import User
 
 
 # *** Advices & Tests *** #
@@ -192,10 +194,36 @@ class ForumAnswersDetail(APIView):
 # *** # *** # *** Users *** # *** # *** #
 
 class UserRegistration(APIView):
+    """
+    Registration of a new user
+    """
 
     def post(self, request, format=None):
-        serializer = UserSerializer(data=request.data)
+        serializer = UserRegistrationSerializer(data=request.data)
         if serializer.is_valid():
-            serializer.save()
+            new_user = serializer.save()
+            UserScore.objects.create(user=new_user)
             return Response(serializer.data, status=status.HTTP_201_CREATED)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+
+class GetUserInfo(APIView):
+    """
+    Return user id, username and user score with given user id
+    """
+
+    def get_user(self, id):
+        try:
+            user = User.objects.get(id=id)
+        except User.DoesNotExist:
+            raise Http404
+        return user
+
+    def get(self, request, user_id, format=None):
+        user = self.get_user(user_id)
+        try:
+            user_score_instance = user.userscore
+            serializer = UserScoreSerializer(user_score_instance)
+            return Response(serializer.data)
+        except ObjectDoesNotExist:
+            raise Http404

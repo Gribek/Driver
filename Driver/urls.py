@@ -30,4 +30,5 @@ urlpatterns = [
     url(r'^forum_answers/question/(?P<question_id>(\d)+)$', ForumAnswersForQuestion.as_view()),
     url(r'^forum_answers/(?P<answer_id>(\d)+)$', ForumAnswersDetail.as_view()),
     url(r'^new_user/$', UserRegistration.as_view()),
+    url(r'^user_info/(?P<user_id>(\d)+)$', GetUserInfo.as_view()),
 ]
