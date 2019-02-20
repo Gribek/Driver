@@ -44,15 +44,9 @@ class UserRegistrationSerializer(serializers.ModelSerializer):
         fields = ("id", "username", "password",)
 
 
-class UserSerializer(serializers.ModelSerializer):
+class UserInfoSerializer(serializers.ModelSerializer):
+    user_score = serializers.StringRelatedField(read_only=True)
+
     class Meta:
         model = User
-        fields = ("id", "username")
-
-
-class UserScoreSerializer(serializers.ModelSerializer):
-    user = UserSerializer(read_only=True)
-
-    class Meta:
-        model = UserScore
-        fields = ("user", "score")
+        fields = ('id', 'username', 'user_score',)

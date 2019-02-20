@@ -221,9 +221,5 @@ class GetUserInfo(APIView):
 
     def get(self, request, user_id, format=None):
         user = self.get_user(user_id)
-        try:
-            user_score_instance = user.userscore
-            serializer = UserScoreSerializer(user_score_instance)
-            return Response(serializer.data)
-        except ObjectDoesNotExist:
-            raise Http404
+        serializer = UserInfoSerializer(user)
+        return Response(serializer.data)

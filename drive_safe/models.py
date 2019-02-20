@@ -48,8 +48,11 @@ class TestQuestions(models.Model):
 
 
 class UserScore(models.Model):
-    user = models.OneToOneField(User, on_delete=models.CASCADE)
+    user = models.OneToOneField(User, related_name="user_score", on_delete=models.CASCADE)
     score = models.SmallIntegerField(default=0)
+
+    def __str__(self):
+        return str(self.score)
 
 
 class ForumQuestion(models.Model):
