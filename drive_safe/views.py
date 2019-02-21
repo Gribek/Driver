@@ -73,7 +73,7 @@ class AdviceTest(APIView):
 
 class TestCheck(APIView):
     """
-    Check received test question answers.
+    Checks the received answers to test questions.
     """
 
     def post(self, request, user_id, advice_id, format=None):
