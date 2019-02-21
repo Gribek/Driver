@@ -31,4 +31,5 @@ urlpatterns = [
     url(r'^forum_answers/(?P<answer_id>(\d)+)$', ForumAnswersDetail.as_view()),
     url(r'^new_user/$', UserRegistration.as_view()),
     url(r'^user_info/(?P<user_id>(\d)+)$', GetUserInfo.as_view()),
+    url(r'^test_check/(?P<user_id>(\d)+)/(?P<advice_id>(\d)+)$', TestCheck.as_view()),
 ]

@@ -15,6 +15,21 @@ class TestQuestionsSerializer(serializers.ModelSerializer):
         exclude = ('advice', 'correct_answer')
 
 
+class TestAnswerSerializer(serializers.Serializer):
+    question_id = serializers.IntegerField()
+    question_answer = serializers.CharField()
+
+
+class TestPassedSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = TestPassed
+        fields = '__all__'
+
+
+class TestFailedSerializer(serializers.Serializer):
+    incorrect_answers = serializers.ListField()
+
+
 class ForumQuestionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ForumQuestion

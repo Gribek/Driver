@@ -6,6 +6,15 @@ from rest_framework import status
 from drive_safe.models import *
 from drive_safe.serializers import *
 from django.contrib.auth.models import User
+import json
+
+
+def get_user(id):
+    try:
+        user = User.objects.get(id=id)
+    except User.DoesNotExist:
+        raise Http404
+    return user
 
 
 # *** Advices & Tests *** #
@@ -60,6 +69,53 @@ class AdviceTest(APIView):
         test_questions = advice.testquestions_set.all()
         serializer = TestQuestionsSerializer(test_questions, many=True)
         return Response(serializer.data)
+
+
+class TestCheck(APIView):
+    """
+    Check received test question answers.
+    """
+
+    def post(self, request, user_id, advice_id, format=None):
+        serializer = TestAnswerSerializer(data=request.data, many=True)
+        if serializer.is_valid():
+            advice = get_advice_object(advice_id)
+            advice_test_questions = advice.testquestions_set.all()
+            number_of_questions = len(advice_test_questions)
+            number_of_answers = len(serializer.validated_data)
+
+            if TestPassed.objects.filter(user=get_user(user_id),
+                                         advice=advice).exists():  # check if user passed this test before
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+            if not number_of_questions == number_of_answers:  # check if number of test answers equals number of test questions
+                return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            number_of_correct_answers = 0
+            incorrect_answers = {'incorrect_answers': []}
+            for element in serializer.validated_data:
+                question_id = element['question_id']
+                user_answer = element['question_answer']
+                try:
+                    test_question = advice_test_questions.get(
+                        pk=question_id)  # check if this question belong to this test
+                    advice_test_questions = advice_test_questions.exclude(
+                        id=question_id)  # remove once checked question from question pool
+                    correct_answer = test_question.correct_answer
+                    if correct_answer.upper() == user_answer.upper():
+                        number_of_correct_answers += 1
+                    else:
+                        incorrect_answers["incorrect_answers"].append(question_id)
+                except ObjectDoesNotExist:
+                    return Response(status=status.HTTP_400_BAD_REQUEST)
+
+            if number_of_questions == number_of_correct_answers:  # TODO add score to user
+                test_passed = TestPassed.objects.create(user=get_user(user_id), advice=advice)
+                result_serializer = TestPassedSerializer(test_passed)
+                return Response(result_serializer.data, status=status.HTTP_201_CREATED)
+            else:
+                result_serializer = TestFailedSerializer(incorrect_answers)
+                return Response(result_serializer.data, status=status.HTTP_200_OK)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
 # *** # *** # *** Forum *** # *** # *** #
@@ -212,14 +268,7 @@ class GetUserInfo(APIView):
     Return user id, username and user score with given user id
     """
 
-    def get_user(self, id):
-        try:
-            user = User.objects.get(id=id)
-        except User.DoesNotExist:
-            raise Http404
-        return user
-
     def get(self, request, user_id, format=None):
-        user = self.get_user(user_id)
+        user = get_user(user_id)
         serializer = UserInfoSerializer(user)
         return Response(serializer.data)
