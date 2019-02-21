@@ -9,8 +9,7 @@ class Advice(models.Model):
     date_added = models.DateField(auto_now_add=True)
     tags = models.ManyToManyField("Tags", verbose_name="Tagi")
     test_points = models.SmallIntegerField(verbose_name="Ilość pkt za test")
-    passed_by = models.ManyToManyField(User, related_name="users_tests_passed")
-    likes = models.ManyToManyField(User, related_name="users_likes")
+    passed_by = models.ManyToManyField(User, related_name="users_tests_passed", through='TestPassed')
 
     def __str__(self):
         return self.title
@@ -18,6 +17,12 @@ class Advice(models.Model):
     class Meta:
         verbose_name = "Poradę"
         verbose_name_plural = "Porady"
+
+
+class TestPassed(models.Model):
+    advice = models.ForeignKey(Advice, on_delete=models.CASCADE)
+    user = models.ForeignKey(User, on_delete=models.CASCADE)
+    advice_test_passed = models.BooleanField(default=True)
 
 
 class Tags(models.Model):
@@ -40,7 +45,7 @@ class TestQuestions(models.Model):
     correct_answer = models.CharField(max_length=1, verbose_name="Poprawna odpowiedź")
 
     def __str__(self):
-        return self.advice
+        return str(self.advice)
 
     class Meta:
         verbose_name = "Pytanie testowe"

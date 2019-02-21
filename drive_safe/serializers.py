@@ -5,14 +5,14 @@ from drive_safe.models import *
 class AdviceSerializer(serializers.ModelSerializer):
     class Meta:
         model = Advice
-        exclude = ('passed_by', 'likes')
+        exclude = ('passed_by',)
         depth = 1
 
 
 class TestQuestionsSerializer(serializers.ModelSerializer):
     class Meta:
         model = TestQuestions
-        exclude = ('advice',)
+        exclude = ('advice', 'correct_answer')
 
 
 class ForumQuestionsSerializer(serializers.ModelSerializer):
