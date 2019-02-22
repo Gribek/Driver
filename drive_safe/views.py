@@ -3,18 +3,23 @@ from django.http import Http404
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
-from drive_safe.models import *
 from drive_safe.serializers import *
 from django.contrib.auth.models import User
-import json
 
 
-def get_user(id):
+def get_user(user_id):
     try:
-        user = User.objects.get(id=id)
+        user = User.objects.get(id=user_id)
     except User.DoesNotExist:
         raise Http404
     return user
+
+
+def get_advice_object(advice_id):
+    try:
+        return Advice.objects.get(pk=advice_id)
+    except Advice.DoesNotExist:
+        raise Http404
 
 
 # *** Advices & Tests *** #
@@ -39,13 +44,6 @@ class AdviceTagList(APIView):
         advices = Advice.objects.filter(tags=tag_id)
         serializer = AdviceSerializer(advices, many=True)
         return Response(serializer.data)
-
-
-def get_advice_object(id):
-    try:
-        return Advice.objects.get(pk=id)
-    except Advice.DoesNotExist:
-        raise Http404
 
 
 class AdviceDetail(APIView):
@@ -74,17 +72,19 @@ class AdviceTest(APIView):
 class TestCheck(APIView):
     """
     Checks the received answers to test questions.
+    Add points for the test.
     """
 
     def post(self, request, user_id, advice_id, format=None):
         serializer = TestAnswerSerializer(data=request.data, many=True)
         if serializer.is_valid():
             advice = get_advice_object(advice_id)
+            user = get_user(user_id)
             advice_test_questions = advice.testquestions_set.all()
             number_of_questions = len(advice_test_questions)
             number_of_answers = len(serializer.validated_data)
 
-            if TestPassed.objects.filter(user=get_user(user_id),
+            if TestPassed.objects.filter(user=user,
                                          advice=advice).exists():  # check if user passed this test before
                 return Response(status=status.HTTP_400_BAD_REQUEST)
             if not number_of_questions == number_of_answers:  # check if number of test answers equals number of test questions
@@ -108,7 +108,8 @@ class TestCheck(APIView):
                 except ObjectDoesNotExist:
                     return Response(status=status.HTTP_400_BAD_REQUEST)
 
-            if number_of_questions == number_of_correct_answers:  # TODO add score to user
+            if number_of_questions == number_of_correct_answers:
+                self.add_points_to_user(user, advice)  # add points to the user for the test
                 test_passed = TestPassed.objects.create(user=get_user(user_id), advice=advice)
                 result_serializer = TestPassedSerializer(test_passed)
                 return Response(result_serializer.data, status=status.HTTP_201_CREATED)
@@ -116,6 +117,14 @@ class TestCheck(APIView):
                 result_serializer = TestFailedSerializer(incorrect_answers)
                 return Response(result_serializer.data, status=status.HTTP_200_OK)
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+
+    def add_points_to_user(self, user, advice):
+        points_to_add = advice.test_points
+        user_score_instance = user.user_score
+        user_points = user_score_instance.score + points_to_add
+        user_score_instance.score = user_points
+        user_score_instance.save()
+        return None
 
 
 # *** # *** # *** Forum *** # *** # *** #
