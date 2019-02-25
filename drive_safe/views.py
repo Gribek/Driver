@@ -22,6 +22,13 @@ def get_advice_object(advice_id):
         raise Http404
 
 
+def get_forum_question_object(question_id):
+    try:
+        return ForumQuestion.objects.get(pk=question_id)
+    except ForumQuestion.DoesNotExist:
+        raise Http404
+
+
 # *** Advices & Tests *** #
 
 class AdviceList(APIView):
@@ -151,13 +158,6 @@ class ForumQuestionList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-def get_forum_question_object(id):
-    try:
-        return ForumQuestion.objects.get(pk=id)
-    except ForumQuestion.DoesNotExist:
-        raise Http404
-
-
 class ForumQuestionDetail(APIView):
     """
     get:
@@ -191,7 +191,11 @@ class ForumQuestionDetail(APIView):
 
 class ForumAnswersList(APIView):
     """
+    get:
     Return a list of all forum answers
+
+    post:
+    Create a new forum answer instance.
     """
 
     def get(self, request, format=None):
