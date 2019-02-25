@@ -14,7 +14,7 @@ class AdviceAdmin(admin.ModelAdmin):
     inlines = [
         TestQuestionsInline,
     ]
-    exclude = ('passed_by', 'likes')
+    exclude = ('passed_by',)
 
 
 admin.site.register(Advice, AdviceAdmin)

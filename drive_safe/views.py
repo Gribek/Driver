@@ -1,5 +1,6 @@
 from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
+from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework.views import APIView
 from rest_framework import status
@@ -31,10 +32,12 @@ def get_forum_question_object(question_id):
 
 # *** Advices & Tests *** #
 
-class AdviceList(APIView):
+class AdviceList(GenericAPIView):
     """
     Return list of all advices sorted by creation date.
     """
+
+    serializer_class = AdviceSerializer
 
     def get(self, request, format=None):
         advices = Advice.objects.all().order_by("date_added")
@@ -42,10 +45,12 @@ class AdviceList(APIView):
         return Response(serializer.data)
 
 
-class AdviceTagList(APIView):
+class AdviceTagList(GenericAPIView):
     """
     Return list of advices matching to given tag id.
     """
+
+    serializer_class = AdviceSerializer
 
     def get(self, request, tag_id, format=None):
         advices = Advice.objects.filter(tags=tag_id)
@@ -53,10 +58,12 @@ class AdviceTagList(APIView):
         return Response(serializer.data)
 
 
-class AdviceDetail(APIView):
+class AdviceDetail(GenericAPIView):
     """
     Return advice with given id.
     """
+
+    serializer_class = AdviceSerializer
 
     def get(self, request, advice_id, format=None):
         advice = get_advice_object(advice_id)
@@ -64,10 +71,12 @@ class AdviceDetail(APIView):
         return Response(serializer.data)
 
 
-class AdviceTest(APIView):
+class AdviceTest(GenericAPIView):
     """
     Return test questions for given advice id.
     """
+
+    serializer_class = TestQuestionsSerializer
 
     def get(self, request, advice_id, format=None):
         advice = get_advice_object(advice_id)
@@ -76,11 +85,13 @@ class AdviceTest(APIView):
         return Response(serializer.data)
 
 
-class TestCheck(APIView):
+class TestCheck(GenericAPIView):
     """
     Checks the received answers to test questions.
     Add points for the test.
     """
+
+    serializer_class = TestAnswerSerializer
 
     def post(self, request, user_id, advice_id, format=None):
         serializer = TestAnswerSerializer(data=request.data, many=True)
@@ -136,7 +147,7 @@ class TestCheck(APIView):
 
 # *** # *** # *** Forum *** # *** # *** #
 
-class ForumQuestionList(APIView):
+class ForumQuestionList(GenericAPIView):
     """
     get:
     Return a list of all forum questions.
@@ -144,6 +155,8 @@ class ForumQuestionList(APIView):
     post:
     Create a new forum question instance.
     """
+
+    serializer_class = ForumQuestionsSerializer
 
     def get(self, request, format=None):
         forum_questions = ForumQuestion.objects.all()
@@ -158,7 +171,7 @@ class ForumQuestionList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ForumQuestionDetail(APIView):
+class ForumQuestionDetail(GenericAPIView):
     """
     get:
     Retrieve a forum question instance.
@@ -169,6 +182,8 @@ class ForumQuestionDetail(APIView):
     delete:
     Delete a forum question instance.
     """
+
+    serializer_class = ForumQuestionsSerializer
 
     def get(self, request, question_id, format=None):
         forum_question = get_forum_question_object(question_id)
@@ -189,7 +204,7 @@ class ForumQuestionDetail(APIView):
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
-class ForumAnswersList(APIView):
+class ForumAnswersList(GenericAPIView):
     """
     get:
     Return a list of all forum answers
@@ -197,6 +212,8 @@ class ForumAnswersList(APIView):
     post:
     Create a new forum answer instance.
     """
+
+    serializer_class = ForumAnswersSerializer
 
     def get(self, request, format=None):
         forum_answers = ForumAnswers.objects.all()
@@ -211,10 +228,12 @@ class ForumAnswersList(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class ForumAnswersForQuestion(APIView):
+class ForumAnswersForQuestion(GenericAPIView):
     """
     Return a list of forum answers for given forum question id
     """
+
+    serializer_class = ForumAnswersSerializer
 
     def get(self, request, question_id, format=None):
         forum_question = get_forum_question_object(question_id)
@@ -223,7 +242,7 @@ class ForumAnswersForQuestion(APIView):
         return Response(serializer.data)
 
 
-class ForumAnswersDetail(APIView):
+class ForumAnswersDetail(GenericAPIView):
     """
         get:
         Retrieve a forum answer instance.
@@ -235,19 +254,21 @@ class ForumAnswersDetail(APIView):
         Delete a forum answer instance.
         """
 
-    def get_object(self, id):
+    serializer_class = ForumAnswersSerializer
+
+    def get_answer_object(self, id):
         try:
             return ForumAnswers.objects.get(pk=id)
         except ForumAnswers.DoesNotExist:
             raise Http404
 
     def get(self, request, answer_id, format=None):
-        forum_answer = self.get_object(answer_id)
+        forum_answer = self.get_answer_object(answer_id)
         serializer = ForumAnswersSerializer(forum_answer)
         return Response(serializer.data)
 
     def put(self, request, answer_id, format=None):
-        forum_answer = self.get_object(answer_id)
+        forum_answer = self.get_answer_object(answer_id)
         serializer = ForumAnswersSerializer(forum_answer, data=request.data)
         if serializer.is_valid():
             serializer.save()
@@ -255,17 +276,19 @@ class ForumAnswersDetail(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     def delete(self, request, answer_id, format=None):
-        forum_answer = self.get_object(answer_id)
+        forum_answer = self.get_answer_object(answer_id)
         forum_answer.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
 
 # *** # *** # *** Users *** # *** # *** #
 
-class UserRegistration(APIView):
+class UserRegistration(GenericAPIView):
     """
     Registration of a new user
     """
+
+    serializer_class = UserRegistrationSerializer
 
     def post(self, request, format=None):
         serializer = UserRegistrationSerializer(data=request.data)
@@ -276,10 +299,12 @@ class UserRegistration(APIView):
         return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
 
-class GetUserInfo(APIView):
+class GetUserInfo(GenericAPIView):
     """
     Return user id, username and user score with given user id
     """
+
+    serializer_class = UserInfoSerializer
 
     def get(self, request, user_id, format=None):
         user = get_user(user_id)
