@@ -38,6 +38,7 @@ class AdviceList(GenericAPIView):
     """
 
     serializer_class = AdviceSerializer
+    queryset = ''
 
     def get(self, request, format=None):
         advices = Advice.objects.all().order_by("date_added")
@@ -51,6 +52,7 @@ class AdviceTagList(GenericAPIView):
     """
 
     serializer_class = AdviceSerializer
+    queryset = ''
 
     def get(self, request, tag_id, format=None):
         advices = Advice.objects.filter(tags=tag_id)
@@ -64,6 +66,7 @@ class AdviceDetail(GenericAPIView):
     """
 
     serializer_class = AdviceSerializer
+    queryset = ''
 
     def get(self, request, advice_id, format=None):
         advice = get_advice_object(advice_id)
@@ -77,6 +80,7 @@ class AdviceTest(GenericAPIView):
     """
 
     serializer_class = TestQuestionsSerializer
+    queryset = ''
 
     def get(self, request, advice_id, format=None):
         advice = get_advice_object(advice_id)
@@ -92,6 +96,7 @@ class TestCheck(GenericAPIView):
     """
 
     serializer_class = TestAnswerSerializer
+    queryset = ''
 
     def post(self, request, user_id, advice_id, format=None):
         serializer = TestAnswerSerializer(data=request.data, many=True)
@@ -157,6 +162,7 @@ class ForumQuestionList(GenericAPIView):
     """
 
     serializer_class = ForumQuestionsSerializer
+    queryset = ''
 
     def get(self, request, format=None):
         forum_questions = ForumQuestion.objects.all()
@@ -184,6 +190,7 @@ class ForumQuestionDetail(GenericAPIView):
     """
 
     serializer_class = ForumQuestionsSerializer
+    queryset = ''
 
     def get(self, request, question_id, format=None):
         forum_question = get_forum_question_object(question_id)
@@ -214,6 +221,7 @@ class ForumAnswersList(GenericAPIView):
     """
 
     serializer_class = ForumAnswersSerializer
+    queryset = ''
 
     def get(self, request, format=None):
         forum_answers = ForumAnswers.objects.all()
@@ -234,6 +242,7 @@ class ForumAnswersForQuestion(GenericAPIView):
     """
 
     serializer_class = ForumAnswersSerializer
+    queryset = ''
 
     def get(self, request, question_id, format=None):
         forum_question = get_forum_question_object(question_id)
@@ -255,6 +264,7 @@ class ForumAnswersDetail(GenericAPIView):
         """
 
     serializer_class = ForumAnswersSerializer
+    queryset = ''
 
     def get_answer_object(self, id):
         try:
@@ -289,6 +299,7 @@ class UserRegistration(GenericAPIView):
     """
 
     serializer_class = UserRegistrationSerializer
+    queryset = ''
 
     def post(self, request, format=None):
         serializer = UserRegistrationSerializer(data=request.data)
@@ -305,6 +316,7 @@ class GetUserInfo(GenericAPIView):
     """
 
     serializer_class = UserInfoSerializer
+    queryset = ''
 
     def get(self, request, user_id, format=None):
         user = get_user(user_id)
