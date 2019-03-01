@@ -19,7 +19,6 @@ class UserTests(APITestCase):
         self.assertEqual(response.status_code, status.HTTP_201_CREATED)
         self.assertEqual(User.objects.count(), 1)
         self.assertEqual(User.objects.get().username, "janek")
-        return response.data
 
 
 class AdviceTests(APITestCase):
