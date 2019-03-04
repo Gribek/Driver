@@ -92,7 +92,7 @@ class ForumTests(APITestCase):
         url = reverse('forum_question_detail', args=[self.forum_question1.id])
         data = None
         response = self.client.get(url, data, format='json')
-        # self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data.get('id'), self.forum_question1.id)
 
     def test_update_forum_question(self):
