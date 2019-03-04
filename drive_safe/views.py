@@ -107,10 +107,12 @@ class TestCheck(GenericAPIView):
             number_of_questions = len(advice_test_questions)
             number_of_answers = len(serializer.validated_data)
 
-            if TestPassed.objects.filter(user=user,
-                                         advice=advice).exists():  # check if user passed this test before
+            # check if the user has not passed this test before
+            if TestPassed.objects.filter(user=user, advice=advice).exists():
                 return Response(status=status.HTTP_400_BAD_REQUEST)
-            if not number_of_questions == number_of_answers:  # check if number of test answers equals number of test questions
+
+            # check if number of test answers equals number of test questions
+            if not number_of_questions == number_of_answers:
                 return Response(status=status.HTTP_400_BAD_REQUEST)
 
             number_of_correct_answers = 0
@@ -123,13 +125,14 @@ class TestCheck(GenericAPIView):
                         pk=question_id)  # check if this question belong to this test
                     advice_test_questions = advice_test_questions.exclude(
                         id=question_id)  # remove once checked question from question pool
-                    correct_answer = test_question.correct_answer
-                    if correct_answer.upper() == user_answer.upper():
-                        number_of_correct_answers += 1
-                    else:
-                        incorrect_answers["incorrect_answers"].append(question_id)
-                except ObjectDoesNotExist:
+                except TestQuestions.DoesNotExist:
                     return Response(status=status.HTTP_400_BAD_REQUEST)
+
+                correct_answer = test_question.correct_answer
+                if correct_answer.upper() == user_answer.upper():
+                    number_of_correct_answers += 1
+                else:
+                    incorrect_answers["incorrect_answers"].append(question_id)
 
             if number_of_questions == number_of_correct_answers:
                 self.add_points_to_user(user, advice)  # add points to the user for the test
@@ -144,8 +147,7 @@ class TestCheck(GenericAPIView):
     def add_points_to_user(self, user, advice):
         points_to_add = advice.test_points
         user_score_instance = user.user_score
-        user_points = user_score_instance.score + points_to_add
-        user_score_instance.score = user_points
+        user_score_instance.score += points_to_add
         user_score_instance.save()
         return None
 
