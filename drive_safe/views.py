@@ -1,8 +1,6 @@
-from django.core.exceptions import ObjectDoesNotExist
 from django.http import Http404
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
-from rest_framework.views import APIView
 from rest_framework import status
 from drive_safe.serializers import *
 from django.contrib.auth.models import User
@@ -121,10 +119,12 @@ class TestCheck(GenericAPIView):
                 question_id = element['question_id']
                 user_answer = element['question_answer']
                 try:
+                    # check if this question belong to this test
                     test_question = advice_test_questions.get(
-                        pk=question_id)  # check if this question belong to this test
+                        pk=question_id)
+                    # remove once checked question from question pool
                     advice_test_questions = advice_test_questions.exclude(
-                        id=question_id)  # remove once checked question from question pool
+                        id=question_id)
                 except TestQuestions.DoesNotExist:
                     return Response(status=status.HTTP_400_BAD_REQUEST)
 
@@ -135,16 +135,21 @@ class TestCheck(GenericAPIView):
                     incorrect_answers["incorrect_answers"].append(question_id)
 
             if number_of_questions == number_of_correct_answers:
-                self.add_points_to_user(user, advice)  # add points to the user for the test
-                test_passed = TestPassed.objects.create(user=get_user(user_id), advice=advice)
+                TestCheck.add_points_to_user(user, advice)
+                test_passed = TestPassed.objects.create(user=user,
+                                                        advice=advice)
                 result_serializer = TestPassedSerializer(test_passed)
-                return Response(result_serializer.data, status=status.HTTP_201_CREATED)
+                return Response(result_serializer.data,
+                                status=status.HTTP_201_CREATED)
             else:
                 result_serializer = TestFailedSerializer(incorrect_answers)
-                return Response(result_serializer.data, status=status.HTTP_200_OK)
-        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
+                return Response(result_serializer.data,
+                                status=status.HTTP_200_OK)
+        return Response(serializer.errors,
+                        status=status.HTTP_400_BAD_REQUEST)
 
-    def add_points_to_user(self, user, advice):
+    @staticmethod
+    def add_points_to_user(user, advice):
         points_to_add = advice.test_points
         user_score_instance = user.user_score
         user_score_instance.score += points_to_add
@@ -201,7 +206,8 @@ class ForumQuestionDetail(GenericAPIView):
 
     def put(self, request, question_id, format=None):
         forum_question = get_forum_question_object(question_id)
-        serializer = ForumQuestionsSerializer(forum_question, data=request.data)
+        serializer = ForumQuestionsSerializer(forum_question,
+                                              data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
