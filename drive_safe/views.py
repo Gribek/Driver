@@ -36,10 +36,10 @@ class AdviceList(GenericAPIView):
     """
 
     serializer_class = AdviceSerializer
-    queryset = ''
+    queryset = Advice.objects.all().order_by("date_added")
 
     def get(self, request, format=None):
-        advices = Advice.objects.all().order_by("date_added")
+        advices = self.get_queryset()
         serializer = AdviceSerializer(advices, many=True)
         return Response(serializer.data)
 
@@ -50,10 +50,10 @@ class AdviceTagList(GenericAPIView):
     """
 
     serializer_class = AdviceSerializer
-    queryset = ''
+    queryset = Advice.objects.all()
 
     def get(self, request, tag_id, format=None):
-        advices = Advice.objects.filter(tags=tag_id)
+        advices = self.get_queryset().filter(tags=tag_id)
         serializer = AdviceSerializer(advices, many=True)
         return Response(serializer.data)
 
@@ -64,11 +64,10 @@ class AdviceDetail(GenericAPIView):
     """
 
     serializer_class = AdviceSerializer
-    queryset = ''
 
     def get(self, request, advice_id, format=None):
         advice = get_advice_object(advice_id)
-        serializer = AdviceSerializer(advice)
+        serializer = self.serializer_class(advice)
         return Response(serializer.data)
 
 
@@ -83,7 +82,7 @@ class AdviceTest(GenericAPIView):
     def get(self, request, advice_id, format=None):
         advice = get_advice_object(advice_id)
         test_questions = advice.testquestions_set.all()
-        serializer = TestQuestionsSerializer(test_questions, many=True)
+        serializer = self.serializer_class(test_questions, many=True)
         return Response(serializer.data)
 
 
@@ -94,7 +93,6 @@ class TestCheck(GenericAPIView):
     """
 
     serializer_class = TestAnswerSerializer
-    queryset = ''
 
     def post(self, request, user_id, advice_id, format=None):
         serializer = TestAnswerSerializer(data=request.data, many=True)
@@ -169,15 +167,15 @@ class ForumQuestionList(GenericAPIView):
     """
 
     serializer_class = ForumQuestionsSerializer
-    queryset = ''
+    queryset = ForumQuestion.objects.all()
 
     def get(self, request, format=None):
-        forum_questions = ForumQuestion.objects.all()
-        serializer = ForumQuestionsSerializer(forum_questions, many=True)
+        forum_questions = self.get_queryset()
+        serializer = self.serializer_class(forum_questions, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = ForumQuestionsSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -197,17 +195,16 @@ class ForumQuestionDetail(GenericAPIView):
     """
 
     serializer_class = ForumQuestionsSerializer
-    queryset = ''
 
     def get(self, request, question_id, format=None):
         forum_question = get_forum_question_object(question_id)
-        serializer = ForumQuestionsSerializer(forum_question)
+        serializer = self.serializer_class(forum_question)
         return Response(serializer.data)
 
     def put(self, request, question_id, format=None):
         forum_question = get_forum_question_object(question_id)
-        serializer = ForumQuestionsSerializer(forum_question,
-                                              data=request.data)
+        serializer = self.serializer_class(forum_question,
+                                           data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -229,15 +226,15 @@ class ForumAnswersList(GenericAPIView):
     """
 
     serializer_class = ForumAnswersSerializer
-    queryset = ''
+    queryset = ForumAnswers.objects.all()
 
     def get(self, request, format=None):
-        forum_answers = ForumAnswers.objects.all()
-        serializer = ForumAnswersSerializer(forum_answers, many=True)
+        forum_answers = self.get_queryset()
+        serializer = self.serializer_class(forum_answers, many=True)
         return Response(serializer.data)
 
     def post(self, request, format=None):
-        serializer = ForumAnswersSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data, status=status.HTTP_201_CREATED)
@@ -255,7 +252,7 @@ class ForumAnswersForQuestion(GenericAPIView):
     def get(self, request, question_id, format=None):
         forum_question = get_forum_question_object(question_id)
         forum_answers = forum_question.forumanswers_set.all()
-        serializer = ForumAnswersSerializer(forum_answers, many=True)
+        serializer = self.serializer_class(forum_answers, many=True)
         return Response(serializer.data)
 
 
@@ -272,7 +269,6 @@ class ForumAnswersDetail(GenericAPIView):
         """
 
     serializer_class = ForumAnswersSerializer
-    queryset = ''
 
     def get_answer_object(self, id):
         try:
@@ -282,12 +278,12 @@ class ForumAnswersDetail(GenericAPIView):
 
     def get(self, request, answer_id, format=None):
         forum_answer = self.get_answer_object(answer_id)
-        serializer = ForumAnswersSerializer(forum_answer)
+        serializer = self.serializer_class(forum_answer)
         return Response(serializer.data)
 
     def put(self, request, answer_id, format=None):
         forum_answer = self.get_answer_object(answer_id)
-        serializer = ForumAnswersSerializer(forum_answer, data=request.data)
+        serializer = self.serializer_class(forum_answer, data=request.data)
         if serializer.is_valid():
             serializer.save()
             return Response(serializer.data)
@@ -307,10 +303,9 @@ class UserRegistration(GenericAPIView):
     """
 
     serializer_class = UserRegistrationSerializer
-    queryset = ''
 
     def post(self, request, format=None):
-        serializer = UserRegistrationSerializer(data=request.data)
+        serializer = self.serializer_class(data=request.data)
         if serializer.is_valid():
             new_user = serializer.save()
             UserScore.objects.create(user=new_user)
@@ -324,9 +319,8 @@ class GetUserInfo(GenericAPIView):
     """
 
     serializer_class = UserInfoSerializer
-    queryset = ''
 
     def get(self, request, user_id, format=None):
         user = get_user(user_id)
-        serializer = UserInfoSerializer(user)
+        serializer = self.serializer_class(user)
         return Response(serializer.data)
