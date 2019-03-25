@@ -40,7 +40,7 @@ class AdviceList(GenericAPIView):
 
     def get(self, request, format=None):
         advices = self.get_queryset()
-        serializer = AdviceSerializer(advices, many=True)
+        serializer = self.serializer_class(advices, many=True)
         return Response(serializer.data)
 
 
@@ -54,7 +54,7 @@ class AdviceTagList(GenericAPIView):
 
     def get(self, request, tag_id, format=None):
         advices = self.get_queryset().filter(tags=tag_id)
-        serializer = AdviceSerializer(advices, many=True)
+        serializer = self.serializer_class(advices, many=True)
         return Response(serializer.data)
 
 
@@ -95,7 +95,7 @@ class TestCheck(GenericAPIView):
     serializer_class = TestAnswerSerializer
 
     def post(self, request, user_id, advice_id, format=None):
-        serializer = TestAnswerSerializer(data=request.data, many=True)
+        serializer = self.serializer_class(data=request.data, many=True)
         if serializer.is_valid():
             advice = get_advice_object(advice_id)
             user = get_user(user_id)
