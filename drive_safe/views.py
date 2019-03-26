@@ -1,4 +1,4 @@
-from django.http import Http404
+from django.http import Http404, JsonResponse
 from rest_framework.generics import GenericAPIView
 from rest_framework.response import Response
 from rest_framework import status
@@ -99,17 +99,17 @@ class TestCheck(GenericAPIView):
         if serializer.is_valid():
             advice = get_advice_object(advice_id)
             user = get_user(user_id)
-            advice_test_questions = advice.testquestions_set.all()
-            number_of_questions = len(advice_test_questions)
-            number_of_answers = len(serializer.validated_data)
-
             # check if the user has not passed this test before
             if TestPassed.objects.filter(user=user, advice=advice).exists():
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({'error message': 'Test already passed'},
+                                    status=status.HTTP_400_BAD_REQUEST)
 
-            # check if number of test answers equals number of test questions
+            test_questions = advice.testquestions_set.all()
+            number_of_questions = len(test_questions)
+            number_of_answers = len(serializer.validated_data)
             if not number_of_questions == number_of_answers:
-                return Response(status=status.HTTP_400_BAD_REQUEST)
+                return JsonResponse({'message': 'Wrong number of answers'},
+                                    status=status.HTTP_400_BAD_REQUEST)
 
             number_of_correct_answers = 0
             incorrect_answers = {'incorrect_answers': []}
@@ -118,21 +118,23 @@ class TestCheck(GenericAPIView):
                 user_answer = element['question_answer']
                 try:
                     # check if this question belong to this test
-                    test_question = advice_test_questions.get(
-                        pk=question_id)
+                    question = test_questions.get(
+                        id=question_id)
                     # remove once checked question from question pool
-                    advice_test_questions = advice_test_questions.exclude(
+                    test_questions = test_questions.exclude(
                         id=question_id)
                 except TestQuestions.DoesNotExist:
-                    return Response(status=status.HTTP_400_BAD_REQUEST)
-
-                correct_answer = test_question.correct_answer
+                    return JsonResponse(
+                        {'message': 'Question does not belong to the test'},
+                        status=status.HTTP_400_BAD_REQUEST
+                    )
+                correct_answer = question.correct_answer
                 if correct_answer.upper() == user_answer.upper():
                     number_of_correct_answers += 1
                 else:
                     incorrect_answers["incorrect_answers"].append(question_id)
 
-            if number_of_questions == number_of_correct_answers:
+            if number_of_correct_answers == number_of_questions:
                 TestCheck.add_points_to_user(user, advice)
                 test_passed = TestPassed.objects.create(user=user,
                                                         advice=advice)
@@ -143,8 +145,7 @@ class TestCheck(GenericAPIView):
                 result_serializer = TestFailedSerializer(incorrect_answers)
                 return Response(result_serializer.data,
                                 status=status.HTTP_200_OK)
-        return Response(serializer.errors,
-                        status=status.HTTP_400_BAD_REQUEST)
+        return Response(serializer.errors, status=status.HTTP_400_BAD_REQUEST)
 
     @staticmethod
     def add_points_to_user(user, advice):
