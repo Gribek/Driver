@@ -28,8 +28,6 @@ def get_forum_question_object(question_id):
         raise Http404
 
 
-# *** Advices & Tests *** #
-
 class AdviceList(GenericAPIView):
     """
     Return list of all advices sorted by creation date.
@@ -155,8 +153,6 @@ class TestCheck(GenericAPIView):
         user_score_instance.save()
         return None
 
-
-# *** # *** # *** Forum *** # *** # *** #
 
 class ForumQuestionList(GenericAPIView):
     """
@@ -295,8 +291,6 @@ class ForumAnswersDetail(GenericAPIView):
         forum_answer.delete()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
-
-# *** # *** # *** Users *** # *** # *** #
 
 class UserRegistration(GenericAPIView):
     """
