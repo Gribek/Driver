@@ -78,7 +78,7 @@ DATABASES = {
         'ENGINE': 'django.db.backends.postgresql',
         'NAME': 'drive_safe',
         'USER': 'postgres',
-        'PASSWORD': 'coderslab',
+        'PASSWORD': 'postgres',
         'HOST': '127.0.0.1',
     }
 }
