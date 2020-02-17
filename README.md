@@ -6,7 +6,7 @@
 * [Setup](#setup)
 
 ### General info
-Driver is a REST API for a website on which various articles about road safety will be placed. The application is also intended to include tests to check the user's knowledge and the forum to ask questions. The API provides the back-end functionalities needed to run the application, includes an administration panel for content management (CRUD) and automatically generated endpoint documentation.
+The Driver is the REST API for a website dedicated to road safety theme. The application is also intended to include tests to check the user's knowledge and the forum to ask questions. The API provides the back-end functionalities needed to run the application, includes an administration panel for content management (CRUD) and automatically generated endpoint documentation.
 
 ### Technologies
 * Python 3.6.7
